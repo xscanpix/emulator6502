@@ -2,6 +2,7 @@ set(EMULATOR6502_PATH "Emulator6502")
 
 set(INTERNAL_HEADERS
   ${EMULATOR6502_PATH}/common.h
+  ${EMULATOR6502_PATH}/opcode.h
   ${EMULATOR6502_PATH}/cpu.h
   ${EMULATOR6502_PATH}/emulator.h
 )
