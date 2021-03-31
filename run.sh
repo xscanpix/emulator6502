@@ -1,3 +1,3 @@
 #! /bin/bash
 
-./build/test
+./build/Emulator6502Tests
