@@ -12,18 +12,20 @@ namespace ISA_6502
     enum InstructionFormat
     {
         InvalidFormat = 0,
-        op_accumulator,
-        op_immediate,
-        op_zero_page,
-        op_zero_page_x,
-        op_zero_page_y,
-        op_relative,
-        op_absolute,
-        op_absolute_x,
-        op_absolute_y,
-        op_indirect,
-        op_indexed_indirect,
-        op_indirect_indexed
+        Undocumented,
+        OP,
+        OP_accumulator,
+        OP_immediate,
+        OP_zero_page,
+        OP_zero_page_x,
+        OP_zero_page_y,
+        OP_relative,
+        OP_absolute,
+        OP_absolute_x,
+        OP_absolute_y,
+        OP_indirect,
+        OP_indirect_x,
+        OP_indirect_y
     };
 
     struct InstructionDescriptor
@@ -33,13 +35,16 @@ namespace ISA_6502
         InstructionFormat format{InvalidFormat};
     };
 
-    InstructionDescriptor desc_table[256];
+    extern InstructionDescriptor desc_table[256];
 
     enum Registers
     {
-        Invalid = 0,
+        PC,
+        SP,
+        A,
         X,
-        Y
+        Y,
+        PS
     };
 
     class Instruction
