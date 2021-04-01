@@ -1,11 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <stddef.h>
-
-#define KB 1024
-#define MB KB * 1024
-#define GB MB * 1024
 
 typedef uint8_t u8;
 typedef uint16_t u16;
