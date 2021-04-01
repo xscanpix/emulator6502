@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ISA_6502
+namespace Emulator
 {
     class Instruction;
 

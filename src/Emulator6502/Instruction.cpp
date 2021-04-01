@@ -1,11 +1,10 @@
 #include "Instruction.h"
-
-#include "Instruction.h"
 #include "Interpreter.h"
 
-namespace ISA_6502
+namespace Emulator
 {
-    static void undoc(u8 op, const char *mnemonic)
+
+    void DescriptorTables::undoc(const u8 op, const char *mnemonic)
     {
         InstructionDescriptor &d = desc_table[op];
 
@@ -14,7 +13,7 @@ namespace ISA_6502
         d.mnemonic = mnemonic;
     }
 
-    static void build(u8 op, const char *mnemonic, InstructionFormat format, InstructionHandler handler)
+    void DescriptorTables::build(const u8 op, const char *mnemonic, const InstructionFormat format, const InstructionHandler handler)
     {
         InstructionDescriptor &d = desc_table[op];
 
@@ -23,9 +22,8 @@ namespace ISA_6502
         d.mnemonic = mnemonic;
     }
 
-    static void build_descriptor_table()
+    void DescriptorTables::build_descriptor_table()
     {
-
         build(0x00, "BRK", OP, &Interpreter::BRK);
         build(0x01, "ORA", OP_indirect_x, &Interpreter::ORA_INDX);
         undoc(0x02, "HALT");
@@ -298,5 +296,4 @@ namespace ISA_6502
         build(0xFE, "INC", OP_absolute_x, &Interpreter::INC_ABSX);
         undoc(0xFF, "INC-SBC");
     }
-
 }

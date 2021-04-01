@@ -1,8 +1,10 @@
 #pragma once
 
-#include "common.h"
+#include <array>
 
-namespace ISA_6502
+#include "Types.h"
+
+namespace Emulator
 {
     class Instruction;
     class Interpreter;
@@ -34,27 +36,42 @@ namespace ISA_6502
         const char *mnemonic{nullptr};
         InstructionFormat format{InvalidFormat};
     };
+    typedef struct InstructionDescriptor InstructionDescriptor;
 
-    extern InstructionDescriptor desc_table[256];
-
-    enum Registers
+    class DescriptorTables
     {
-        PC,
-        SP,
-        A,
-        X,
-        Y,
-        PS
+    public:
+        static DescriptorTables &the()
+        {
+            static DescriptorTables instance;
+            return instance;
+        }
+        InstructionDescriptor *operator[](u8 op)
+        {
+            return &desc_table[op];
+        }
+
+    private:
+        InstructionDescriptor desc_table[256];
+
+    private:
+        DescriptorTables() { build_descriptor_table(); }
+        void undoc(const u8 op, const char *mnemonic);
+        void build(const u8 op, const char *mnemonic, const InstructionFormat format, const InstructionHandler handler);
+        void build_descriptor_table();
     };
 
     class Instruction
     {
     public:
+        Instruction(const u8 op) : m_descriptor(DescriptorTables::the()[op]), m_op(op) {}
+
     private:
-        InstructionDescriptor *descriptor{nullptr};
+        InstructionDescriptor *m_descriptor{nullptr};
 
         u8 m_op{0};
         u16 m_imm{0};
         u8 m_reg_index{0};
     };
+
 }
