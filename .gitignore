@@ -44,5 +44,7 @@ CTestTestfile.cmake
 _deps
 
 build/
+bin/
+input_binaries/
 
 .vscode
