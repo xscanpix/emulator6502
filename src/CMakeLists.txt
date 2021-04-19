@@ -5,11 +5,13 @@ set(INTERNAL_HEADERS
   ${EMULATOR6502_PATH}/Instruction.h
   ${EMULATOR6502_PATH}/Interpreter.h
   ${EMULATOR6502_PATH}/DescriptorTable.h
+  ${EMULATOR6502_PATH}/FileLoader/FileLoader.h
   ${EMULATOR6502_PATH}/Cpu.h
 )
 set(IMPL_SOURCES
   ${EMULATOR6502_PATH}/Instruction.cpp
   ${EMULATOR6502_PATH}/DescriptorTable.cpp
+  ${EMULATOR6502_PATH}/FileLoader/FileLoader.cpp
   ${EMULATOR6502_PATH}/Cpu.cpp
 )
 set(INTERNAL_FILES ${IMPL_SOURCES} ${INTERNAL_HEADERS})

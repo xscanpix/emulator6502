@@ -33,6 +33,7 @@ namespace Emulator
         InstructionHandler handler{nullptr};
         const char *mnemonic{nullptr};
         InstructionFormat format{InvalidFormat};
+        u32 bytes{0};
     };
 
     class DescriptorTables
@@ -53,7 +54,7 @@ namespace Emulator
 
     private:
         DescriptorTables() { build_descriptor_table(); }
-        void undoc(const u8 op, const char *mnemonic);
+        void undoc(const u8 op, const char *mnemonic, const u32 bytes);
         void build(const u8 op, const char *mnemonic, const InstructionFormat format, const InstructionHandler handler);
         void build_descriptor_table();
     };

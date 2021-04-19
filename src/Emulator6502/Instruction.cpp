@@ -5,6 +5,26 @@
 
 namespace Emulator
 {
+    std::ostream &operator<<(std::ostream &out, const Instruction &insn)
+    {
+        out << std::setfill('0') << std::setw(4) << std::hex << insn.opcode();
+
+        if (insn.operand_bytes() == 2)
+        {
+            out << std::setfill('0') << std::setw(4) << std::hex << (u8)insn.operand();
+        }
+        else if (insn.operand_bytes() == 3)
+        {
+            out << std::setfill('0') << std::setw(4) << std::hex << (u16)insn.operand();
+        }
+        else
+        {
+            // FIXME: Should not be reached.
+        }
+
+        return out;
+    }
+
     std::string Instruction::to_string()
     {
         std::stringstream ss;

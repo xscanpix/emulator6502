@@ -1,14 +1,18 @@
 #pragma once
 
 #include "Interpreter.h"
+#include "Instruction.h"
 #include "Types.h"
 #include "common.h"
+
+#include <memory>
 
 namespace Emulator
 {
     struct RAM
     {
         u8 data[64 * KB];
+        size_t size{0};
     };
 
     struct Flags
@@ -34,10 +38,53 @@ namespace Emulator
     class Cpu final : public Interpreter
     {
     public:
+        static Cpu &the()
+        {
+            static Cpu instance;
+            return instance;
+        }
+        void reset()
+        {
+            // Set CPU to a known initial state
+            m_regs.PC = 0x400;
+        }
+
+        void load_into_ram(const u8 *data, const size_t size)
+        {
+            m_mem.size = size;
+            for (size_t ii = 0; ii < size; ++ii)
+            {
+                m_mem.data[ii] = data[ii];
+            }
+        }
+
+        Instruction fetch()
+        {
+            const auto op = m_mem.data[m_regs.PC];
+
+            const auto desc = DescriptorTables::the()[op];
+            const auto bytes = desc->bytes;
+
+            if (bytes == 2)
+            {
+                u8 operand = m_mem.data[m_regs.PC + 1];
+                return {op, operand, bytes};
+            }
+            else if (bytes == 3)
+            {
+                u16 operand = ((u16)m_mem.data[m_regs.PC + 1]) & (((u16)m_mem.data[m_regs.PC + 2]) << 8);
+                return {op, operand, bytes};
+            }
+            else
+            {
+                return {op};
+            }
+        }
+
     private:
-        RAM mem;
-        Registers regs;
-        Flags flags;
+        RAM m_mem;
+        Registers m_regs;
+        Flags m_flags;
 
     private:
         virtual void ADC_IMM(const Instruction &) override;

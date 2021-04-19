@@ -11,6 +11,8 @@ set(INCLUDES_DIR ${EMULATOR6502_DIR}/include)
 set(TESTS_DIR ${EMULATOR6502_DIR}/tests)
 set(INSTALL_DIR ${EMULATOR6502_DIR}/bin)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${INSTALL_DIR})
+
 add_subdirectory(${SOURCES_DIR})
 
 add_subdirectory(external/Catch2)
