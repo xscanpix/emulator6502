@@ -118,7 +118,7 @@ namespace Emulator
         /*0x6D = */ ADC_ABS,
         /*0x6E = */ ROR_ABS,
         /*0x6F = */ ROR_ADC_ABS_UNDOCUMENTED_6F,
-        /*0x70 = */ BCS_REL_70,
+        /*0x70 = */ BVS_REL,
         /*0x71 = */ ADC_INDY,
         /*0x72 = */ HALT_UNDOCUMENTED_72,
         /*0x73 = */ ROR_ADC_ZPY_UNDOCUMENTED_73,

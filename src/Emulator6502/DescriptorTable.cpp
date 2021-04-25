@@ -172,7 +172,7 @@ namespace Emulator
         build(Opcode::ROR_ABS, "ROR", OP_absolute, &Interpreter::ROR_ABS);
         undoc(Opcode::ROR_ADC_ABS_UNDOCUMENTED_6F, "ROR-ADC", 3);
 
-        build(Opcode::BCS_REL_70, "BCS", OP_relative, &Interpreter::BCS);
+        build(Opcode::BVS_REL, "BVS", OP_relative, &Interpreter::BVS);
         build(Opcode::ADC_INDY, "ADC", OP_indirect_y, &Interpreter::ADC_INDY);
         undoc(Opcode::HALT_UNDOCUMENTED_72, "HALT", 1);
         undoc(Opcode::ROR_ADC_ZPY_UNDOCUMENTED_73, "ROR-ADC", 2);
