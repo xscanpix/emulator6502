@@ -4,7 +4,7 @@
 #include <sstream>
 
 #include "Instruction.h"
-#include "opcode.h"
+#include "Opcodes.h"
 #include "FileLoader/FileLoader.h"
 
 #include "Cpu.h"
@@ -16,18 +16,22 @@ int main(int argc, char *const argv[])
     (void)argc;
     (void)argv;
 
+    Cpu cpu = {};
+
     {
         FileLoader loader;
         FileLoader::from_binary(loader, "./input_binaries/6502_functional_test.bin");
-        Cpu::the().load_into_ram(loader.data(), loader.size());
+        cpu.load_into_ram(loader.data(), loader.size());
         std::cout << loader;
     }
 
-    Cpu::the().reset();
-
-    auto insn = Cpu::the().fetch();
-
-    std::cout << insn << std::endl;
+    for (;;)
+    {
+        auto insn = cpu.fetch();
+        std::cout << insn.stringify();
+        (cpu.*insn.handler())(insn);
+        //std::cout << cpu.cpu_state();
+    }
 
     return 0;
 }

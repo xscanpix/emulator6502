@@ -51,6 +51,7 @@ namespace Emulator
         Instruction fetch();
 
         std::string cpu_state() const;
+        std::string cpu_stack() const;
 
     private:
         RAM m_mem;
@@ -61,8 +62,16 @@ namespace Emulator
         void reset();
         void inc_PC(const int value = 1) { m_regs.PC += value; }
 
+        void set_flags(const u8 new_flags);
+        u8 get_flags();
+
         void set_ZN_reg_A();
         void set_ZN_reg_X();
+        void set_ZN_reg_Y();
+
+        void set_flags_after_compare_reg_A(const u8 value);
+        void set_flags_after_compare_reg_X(const u8 value);
+        void set_flags_after_compare_reg_Y(const u8 value);
 
     private:
         virtual void ADC_IMM(const Instruction &) override;

@@ -7,10 +7,9 @@ namespace Emulator
 {
     std::string Instruction::stringify() const
     {
-        std::ios_base::fmtflags f(std::cout.flags());
         std::stringstream ss;
 
-        ss << m_descriptor->mnemonic << " " << std::hex;
+        ss << m_descriptor->mnemonic << "(" << std::hex << (int)m_opcode << ") ";
 
         switch (m_descriptor->format)
         {
@@ -65,8 +64,6 @@ namespace Emulator
         }
 
         ss << std::endl;
-
-        std::cout.flags(f);
 
         return std::move(ss.str());
     }
