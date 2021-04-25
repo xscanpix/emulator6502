@@ -29,11 +29,10 @@ namespace Emulator
 
         u16 operand() const { return m_operand; }
         u8 opcode() const { return m_opcode; }
-        u32 operand_bytes() const { return m_operand_bytes; }
+        u32 operandBytes() const { return m_operand_bytes; }
         auto handler() const { return m_descriptor->handler; }
 
-        friend std::ostream &operator<<(std::ostream &, const Instruction &);
-        std::string to_string();
+        std::string stringify() const;
 
     private:
         const InstructionDescriptor *const m_descriptor{nullptr};
