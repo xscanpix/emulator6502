@@ -4,6 +4,9 @@
 #include "Instruction.h"
 #include "Types.h"
 #include "common.h"
+#include "Opcodes.h"
+
+#include <assert.h>
 
 #include <memory>
 
@@ -38,53 +41,28 @@ namespace Emulator
     class Cpu final : public Interpreter
     {
     public:
-        static Cpu &the()
+        Cpu()
         {
-            static Cpu instance;
-            return instance;
-        }
-        void reset()
-        {
-            // Set CPU to a known initial state
-            m_regs.PC = 0x400;
+            reset();
         }
 
-        void load_into_ram(const u8 *data, const size_t size)
-        {
-            m_mem.size = size;
-            for (size_t ii = 0; ii < size; ++ii)
-            {
-                m_mem.data[ii] = data[ii];
-            }
-        }
+        void load_into_ram(const u8 *data, const size_t size);
 
-        Instruction fetch()
-        {
-            const auto op = m_mem.data[m_regs.PC];
+        Instruction fetch();
 
-            const auto desc = DescriptorTables::the()[op];
-            const auto bytes = desc->bytes;
-
-            if (bytes == 2)
-            {
-                u8 operand = m_mem.data[m_regs.PC + 1];
-                return {op, operand, bytes};
-            }
-            else if (bytes == 3)
-            {
-                u16 operand = ((u16)m_mem.data[m_regs.PC + 1]) & (((u16)m_mem.data[m_regs.PC + 2]) << 8);
-                return {op, operand, bytes};
-            }
-            else
-            {
-                return {op};
-            }
-        }
+        std::string cpu_state() const;
 
     private:
         RAM m_mem;
         Registers m_regs;
         Flags m_flags;
+
+    private:
+        void reset();
+        void inc_PC(const int value = 1) { m_regs.PC += value; }
+
+        void set_ZN_reg_A();
+        void set_ZN_reg_X();
 
     private:
         virtual void ADC_IMM(const Instruction &) override;
