@@ -194,7 +194,7 @@ namespace Emulator
         undoc(Opcode::HALT_UNDOCUMENTED_82, "HALT", 1);
         undoc(Opcode::STA_STX_ZPX_UNDOCUMENTED_83, "STA-STX", 2);
         build(Opcode::STY_ZP_84, "STY", OP_zero_page, &Interpreter::STY_ZP);
-        build(Opcode::STA_ZP, "STA", OP_zero_page, &Interpreter::STX_ZP);
+        build(Opcode::STA_ZP, "STA", OP_zero_page, &Interpreter::STA_ZP);
         build(Opcode::STX_ZP, "STX", OP_zero_page, &Interpreter::STX_ZP);
         undoc(Opcode::STA_STX_ZP_UNDOCUMENTED_87, "STA-STX", 2);
         build(Opcode::DEY, "DEY", OP, &Interpreter::DEY);
@@ -252,9 +252,9 @@ namespace Emulator
         build(Opcode::LDA_ABSY, "LDA", OP_absolute_y, &Interpreter::LDA_ABSY);
         build(Opcode::TSX, "TSX", OP, &Interpreter::TSX);
         undoc(Opcode::LDA_LDX_ABSY_UNDOCUMENTED_BB, "LDA-LDX", 3);
-        build(Opcode::LDA_ABSX, "LDY", OP_absolute_x, &Interpreter::LDY_ABSX);
+        build(Opcode::LDY_ABSX, "LDY", OP_absolute_x, &Interpreter::LDY_ABSX);
         build(Opcode::LDA_ABSX, "LDA", OP_absolute_x, &Interpreter::LDA_ABSX);
-        build(Opcode::LDA_ABSY, "LDX", OP_absolute_y, &Interpreter::LDX_ABSY);
+        build(Opcode::LDX_ABSY, "LDX", OP_absolute_y, &Interpreter::LDX_ABSY);
         undoc(Opcode::LDA_LDX_ABSY_UNDOCUMENTED_BF, "LDA-LDX", 3);
 
         build(Opcode::CPY_IMM, "CPY", OP_immediate, &Interpreter::CPY_IMM);
