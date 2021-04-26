@@ -373,6 +373,7 @@ namespace Emulator
     void Cpu::BIT_ABS(const Instruction &) { assert(false); }
     void Cpu::BRK(const Instruction &)
     {
+        // Push the PC and the status flags on the stack
         m_mem.data[0x100 + m_regs.SP] = (m_regs.PC >> 8);
         m_regs.SP--;
         m_mem.data[0x100 + m_regs.SP] = (m_regs.PC & 0xFF);
@@ -380,11 +381,12 @@ namespace Emulator
         m_mem.data[0x100 + m_regs.SP] = get_flags();
         m_regs.SP--;
 
+        // Set PC to interrupt vector
         u16 lsb = m_mem.data[0xFFFE];
         u16 msb = m_mem.data[0xFFFF] << 8;
-
         m_regs.PC = msb | lsb;
 
+        // Set BRK flag
         m_flags.B = 1;
     }
     void Cpu::CLC(const Instruction &)
@@ -513,7 +515,22 @@ namespace Emulator
         m_regs.A = m_mem.data[insn.operand()];
         set_ZN_reg_A();
     }
-    void Cpu::LDA_ABSX(const Instruction &) { assert(false); }
+    void Cpu::LDA_ABSX(const Instruction &insn)
+    {
+        std::cout << insn.operand() + m_regs.X << "\n";
+        m_regs.A = m_mem.data[insn.operand() + m_regs.X];
+        set_ZN_reg_A();
+
+        std::cout << cpu_state();
+
+        auto i = fetch();
+        std::cout << i.stringify();
+        auto i2 = fetch();
+        std::cout << i2.stringify();
+        auto i3 = fetch();
+        std::cout << i3.stringify();
+        assert(false);
+    }
     void Cpu::LDA_ABSY(const Instruction &) { assert(false); }
     void Cpu::LDA_INDX(const Instruction &) { assert(false); }
     void Cpu::LDA_INDY(const Instruction &) { assert(false); }
@@ -604,7 +621,10 @@ namespace Emulator
     void Cpu::SEC(const Instruction &) { assert(false); }
     void Cpu::SED(const Instruction &) { assert(false); }
     void Cpu::SEI(const Instruction &) { assert(false); }
-    void Cpu::STA_ZP(const Instruction &) { assert(false); }
+    void Cpu::STA_ZP(const Instruction &insn)
+    {
+        m_mem.data[0x0000 + (u8)insn.operand()] = m_regs.A;
+    }
     void Cpu::STA_ZPX(const Instruction &) { assert(false); }
     void Cpu::STA_ABS(const Instruction &insn)
     {
@@ -614,7 +634,10 @@ namespace Emulator
     void Cpu::STA_ABSY(const Instruction &) { assert(false); }
     void Cpu::STA_INDX(const Instruction &) { assert(false); }
     void Cpu::STA_INDY(const Instruction &) { assert(false); }
-    void Cpu::STX_ZP(const Instruction &) { assert(false); }
+    void Cpu::STX_ZP(const Instruction &insn)
+    {
+        m_mem.data[0x0000 + (u8)insn.operand()] = m_regs.X;
+    }
     void Cpu::STX_ZPY(const Instruction &) { assert(false); }
     void Cpu::STX_ABS(const Instruction &) { assert(false); }
     void Cpu::STY_ZP(const Instruction &) { assert(false); }
