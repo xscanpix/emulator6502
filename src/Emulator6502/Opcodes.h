@@ -6,7 +6,7 @@ namespace Emulator
 {
     enum Opcode : u8
     {
-        /*0x00 = */ BRK,
+        /*0x00 = */ BRK = 0x00,
         /*0x01 = */ ORA_INDX,
         /*0x02 = */ HALT_UNDOCUMENTED_02,
         /*0x03 = */ ASL_ORA_ZPX_UNDOCUMENTED_03,

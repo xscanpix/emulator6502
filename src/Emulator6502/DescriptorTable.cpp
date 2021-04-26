@@ -30,6 +30,7 @@ namespace Emulator
         case OP_accumulator:
             d.bytes = 1;
             break;
+        case OP_padded_1:
         case OP_zero_page:
         case OP_zero_page_x:
         case OP_zero_page_y:
@@ -53,7 +54,7 @@ namespace Emulator
 
     void DescriptorTables::build_descriptor_table()
     {
-        build(Opcode::BRK, "BRK", OP, &Interpreter::BRK);
+        build(Opcode::BRK, "BRK", OP_padded_1, &Interpreter::BRK);
         build(Opcode::ORA_INDX, "ORA", OP_indirect_x, &Interpreter::ORA_INDX);
         undoc(Opcode::HALT_UNDOCUMENTED_02, "HALT", 1);
         undoc(Opcode::ASL_ORA_ZPX_UNDOCUMENTED_03, "ASL-ORA", 2);

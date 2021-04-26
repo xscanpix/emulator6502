@@ -25,7 +25,8 @@ namespace Emulator
         u8 I : 1;
         u8 D : 1;
         u8 B : 1;
-        u8 O : 1;
+        u8 R : 1;
+        u8 V : 1;
         u8 N : 1;
     };
 
@@ -50,6 +51,7 @@ namespace Emulator
 
         Instruction fetch();
 
+        u16 cpu_pc() const;
         std::string cpu_state() const;
         std::string cpu_stack() const;
 

@@ -15,6 +15,9 @@ namespace Emulator
         {
         case OP:
             break;
+        case OP_padded_1:
+            ss << "[1 byte padded]";
+            break;
         case OP_accumulator:
             ss << "A"
                << " [acc]";

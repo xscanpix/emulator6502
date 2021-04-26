@@ -14,6 +14,7 @@ namespace Emulator
         InvalidFormat = 0,
         Undocumented,
         OP,
+        OP_padded_1,
         OP_accumulator,
         OP_immediate,
         OP_zero_page,
