@@ -147,6 +147,28 @@ namespace Emulator
         return flags;
     }
 
+    u8 Cpu::zp_addr(const u16 addr)
+    {
+        if(addr > 0xFF)
+        {
+            return (u8)(addr % 0x100);
+        }
+
+        return (u8)addr;
+    }
+
+    void Cpu::push_stack(const u8 val)
+    {
+        m_mem.data[0x100 + m_regs.SP] = val;
+        m_regs.SP--;
+    }
+
+    u8 Cpu::pop_stack()
+    {
+        m_regs.SP++;
+        return m_mem.data[0x100 + m_regs.SP];
+    }
+
     void Cpu::set_ZN_reg_A()
     {
         m_flags.Z = m_regs.A == 0 ? 1 : 0;
@@ -388,13 +410,9 @@ namespace Emulator
         m_flags.B = 1;
 
         // Push the PC and the status flags on the stack
-        m_mem.data[0x100 + m_regs.SP] = (m_regs.PC >> 8);
-        m_regs.SP--;
-        m_mem.data[0x100 + m_regs.SP] = (m_regs.PC & 0xFF);
-        m_regs.SP--;
-
-        m_mem.data[0x100 + m_regs.SP] = get_flags();
-        m_regs.SP--;
+        push_stack(m_regs.PC >> 8);
+        push_stack(m_regs.PC & 0xFF);
+        push_stack(get_flags());
 
         // Set PC to interrupt vector
         u16 lsb = m_mem.data[0xFFFE];
@@ -522,10 +540,8 @@ namespace Emulator
     {
         const u16 return_addr = m_regs.PC - 1;
 
-        m_mem.data[0x100 + m_regs.SP] = (return_addr >> 8) & 0xFF;
-        m_regs.SP--;
-        m_mem.data[0x100 + m_regs.SP] = return_addr & 0xFF;
-        m_regs.SP--;
+        push_stack((return_addr >> 8) & 0xFF);
+        push_stack(return_addr & 0xFF);
 
         m_regs.PC = insn.operand();
     }
@@ -569,11 +585,7 @@ namespace Emulator
     }
     void Cpu::LDX_ZPY(const Instruction &insn) 
     {  
-        u16 addr = (insn.operand() + m_regs.Y);
-
-        if(addr > 0xFF) addr = addr % 0x100;
-
-        m_regs.X = m_mem.data[addr];
+        m_regs.X = m_mem.data[zp_addr(insn.operand() + m_regs.Y)];
         set_ZN_reg_X();
     }
     void Cpu::LDX_ABS(const Instruction &) { assert(false); }
@@ -615,8 +627,7 @@ namespace Emulator
     void Cpu::ORA_INDY(const Instruction &) { assert(false); }
     void Cpu::PHA(const Instruction &)
     {
-        m_mem.data[0x100 + m_regs.SP] = m_regs.A;
-        m_regs.SP--;
+        push_stack(m_regs.A);
     }
     void Cpu::PHP(const Instruction &)
     {
@@ -632,19 +643,17 @@ namespace Emulator
         flags |= (m_flags.V << 6);
         flags |= (m_flags.N << 7);
 
-        m_mem.data[0x100 + m_regs.SP] = flags;
-        m_regs.SP--;
+        push_stack(flags);
     }
     void Cpu::PLA(const Instruction &)
     {
-        m_regs.SP++;
-        m_regs.A = m_mem.data[0x100 + m_regs.SP];
+
+        m_regs.A = pop_stack();
         set_ZN_reg_A();
     }
     void Cpu::PLP(const Instruction &)
     {
-        m_regs.SP++;
-        set_flags(m_mem.data[0x100 + m_regs.SP]);
+        set_flags(pop_stack());
     }
     void Cpu::ROL_A(const Instruction &) { assert(false); }
     void Cpu::ROL_ZP(const Instruction &) { assert(false); }
@@ -658,24 +667,17 @@ namespace Emulator
     void Cpu::ROR_ABSX(const Instruction &) { assert(false); }
     void Cpu::RTI(const Instruction &) 
     { 
-        m_regs.SP++;
-        const u8 flags = m_mem.data[0x100 + m_regs.SP];
-
-        m_regs.SP++;
-        const u16 lsb = m_mem.data[0x100 + m_regs.SP];
-
-        m_regs.SP++;
-        const u16 msb = m_mem.data[0x100 + m_regs.SP];
+        const u8 flags = pop_stack();
+        const u16 lsb = pop_stack();
+        const u16 msb = pop_stack();
 
         set_flags(flags);
         m_regs.PC = (msb << 8) | lsb;
     }
     void Cpu::RTS(const Instruction &)
     {
-        m_regs.SP++;
-        const u16 lsb = m_mem.data[0x100 + m_regs.SP];
-        m_regs.SP++;
-        const u16 msb = m_mem.data[0x100 + m_regs.SP];
+        const u16 lsb = pop_stack();
+        const u16 msb = pop_stack();
 
         m_regs.PC = ((msb << 8) | lsb) + 1;
     }
@@ -720,14 +722,11 @@ namespace Emulator
     void Cpu::STA_INDY(const Instruction &) { assert(false); }
     void Cpu::STX_ZP(const Instruction &insn)
     {
-        m_mem.data[0x0000 + (u8)insn.operand()] = m_regs.X;
+        m_mem.data[(u8)insn.operand()] = m_regs.X;
     }
     void Cpu::STX_ZPY(const Instruction &insn) 
     { 
-        u16 addr = (insn.operand() + m_regs.Y);
-        if(addr > 0xFF) addr = addr % 0x100;
-
-        m_mem.data[addr] = m_regs.X;
+        m_mem.data[zp_addr(insn.operand() + m_regs.Y)] = m_regs.X;
     }
     void Cpu::STX_ABS(const Instruction &) { assert(false); }
     void Cpu::STY_ZP(const Instruction &) { assert(false); }

@@ -67,6 +67,11 @@ namespace Emulator
         void set_flags(const u8 new_flags);
         u8 get_flags();
 
+        u8 zp_addr(const u16 addr);
+
+        void push_stack(const u8 val);
+        u8 pop_stack();
+
         void set_ZN_reg_A();
         void set_ZN_reg_X();
         void set_ZN_reg_Y();
