@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <variant>
 
 #include "Types.h"
 #include "DescriptorTable.h"
@@ -38,6 +39,7 @@ namespace Emulator
         const InstructionDescriptor *const m_descriptor{nullptr};
         const u8 m_opcode{0};
         u16 m_operand{0};
+        std::variant<u8, u16> m_op;
         const u32 m_operand_bytes{0};
     };
 }

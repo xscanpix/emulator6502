@@ -228,7 +228,7 @@ namespace Emulator
         build(Opcode::LDA_INDX, "LDA", OP_indirect_x, &Interpreter::LDA_INDX);
         build(Opcode::LDX_IMM, "LDX", OP_immediate, &Interpreter::LDX_IMM);
         undoc(Opcode::LDA_LDX_ZPX_UNDOCUMENTED_A3, "LDA-LDX", 2);
-        build(Opcode::LDY_ZP_A4, "LDY", OP_zero_page, &Interpreter::LDY_ZP);
+        build(Opcode::LDY_ZPX, "LDY", OP_zero_page_x, &Interpreter::LDY_ZPX);
         build(Opcode::LDA_ZP, "LDA", OP_zero_page, &Interpreter::LDA_ZP);
         build(Opcode::LDX_ZP, "LDX", OP_zero_page, &Interpreter::LDX_ZP);
         undoc(Opcode::LDA_LDX_ZP_UNDOCUMENTED_A7, "LDA-LDX", 2);
@@ -245,7 +245,7 @@ namespace Emulator
         build(Opcode::LDA_INDY, "LDA", OP_indirect_y, &Interpreter::LDA_INDY);
         undoc(Opcode::HALT_UNDOCUMENTED_B2, "HALT", 1);
         undoc(Opcode::LDA_LDX_ZPY_UNDOCUMENTED_B3, "LDA-LDX", 2);
-        build(Opcode::LDY_ZP_B4, "LDY", OP_zero_page, &Interpreter::LDY_ZP);
+        build(Opcode::LDY_ZP, "LDY", OP_zero_page, &Interpreter::LDY_ZP);
         build(Opcode::LDA_ZPX, "LDA", OP_zero_page_x, &Interpreter::LDA_ZPX);
         build(Opcode::LDX_ZPY, "LDX", OP_zero_page_y, &Interpreter::LDX_ZPY);
         undoc(Opcode::LDA_LDX_ZPY_UNDOCUMENTED_B7, "LDA-LDX", 2);

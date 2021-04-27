@@ -189,22 +189,22 @@ namespace Emulator
 
     void Cpu::set_flags_after_compare_reg_A(const u8 value)
     {
-        const int result = m_regs.A - value;
+        const u8 result = m_regs.A - value;
 
-        if (result < 0)
+        if(m_regs.A == value)
+        {
+            m_flags.Z = 1;
+        } else 
+        {
+            m_flags.Z = 0;
+        }
+
+        if(value <= m_regs.A)
+        {
+            m_flags.C = 1;
+        } else 
         {
             m_flags.C = 0;
-            m_flags.Z = 0;
-        }
-        else if (result == 0)
-        {
-            m_flags.C = 1;
-            m_flags.Z = 1;
-        }
-        else
-        {
-            m_flags.Z = 0;
-            m_flags.C = 1;
         }
 
         m_flags.N = (result >> 7) & 1;
@@ -451,11 +451,12 @@ namespace Emulator
     }
     void Cpu::CMP_ABSX(const Instruction &insn) 
     {
-        assert(false);
+        std::cout << std::hex << insn.operand() + m_regs.X << (int)m_mem.data[insn.operand() + m_regs.X] << "\n";
         set_flags_after_compare_reg_A(m_mem.data[insn.operand() + m_regs.X]);
     }
     void Cpu::CMP_ABSY(const Instruction &insn) 
     {
+        std::cout << std::hex << insn.operand() + m_regs.X << (int)m_mem.data[insn.operand() + m_regs.Y] << "\n";
         set_flags_after_compare_reg_A(m_mem.data[insn.operand() + m_regs.Y]);
     }
     void Cpu::CMP_INDX(const Instruction &) { assert(false); }
@@ -599,11 +600,7 @@ namespace Emulator
         m_regs.Y = (u8)insn.operand();
         set_ZN_reg_Y();
     }
-    void Cpu::LDY_ZP(const Instruction &insn) 
-    {
-        m_regs.Y = m_mem.data[(u8)insn.operand()];
-        set_ZN_reg_Y();
-    }
+    void Cpu::LDY_ZP(const Instruction &) { assert(false); }
     void Cpu::LDY_ZPX(const Instruction &) { assert(false); }
     void Cpu::LDY_ABS(const Instruction &) { assert(false); }
     void Cpu::LDY_ABSX(const Instruction &) { assert(false); }

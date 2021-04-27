@@ -31,7 +31,7 @@ int main(int argc, char *const argv[])
         auto insn = cpu.fetch();
         std::cout <<  insn.stringify();
         (cpu.*insn.handler())(insn);
-        //std::cout << cpu.cpu_state();
+        std::cout << cpu.cpu_state();
     
         if(cpu.cpu_pc() == 0x0f65)
         {
