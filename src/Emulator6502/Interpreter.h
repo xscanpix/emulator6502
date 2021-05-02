@@ -79,7 +79,7 @@ namespace Emulator
         virtual void INY(const Instruction &) = 0;
         virtual void JMP_ABS(const Instruction &) = 0;
         virtual void JMP_IND(const Instruction &) = 0;
-        virtual void JSR(const Instruction &) = 0;
+        virtual void JSR_ABS(const Instruction &) = 0;
         virtual void LDA_IMM(const Instruction &) = 0;
         virtual void LDA_ZP(const Instruction &) = 0;
         virtual void LDA_ZPX(const Instruction &) = 0;

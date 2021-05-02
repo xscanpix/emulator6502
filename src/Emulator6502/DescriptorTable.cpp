@@ -84,11 +84,11 @@ namespace Emulator
         undoc(Opcode::NOP_UNDOCUMENTED_1A, "NOP", 1);
         undoc(Opcode::ASL_ORA_ABSY_UNDOCUMENTED_1B, "ASL-ORA", 3);
         undoc(Opcode::NOP_ABS_UNDOCUMENTED_1C, "NOP", 3);
-        build(Opcode::ORA_ABSX_1D, "ORA", OP_absolute_x, &Interpreter::ORA_ABSX);
-        build(Opcode::ASL_ABSX_1E, "ASL", OP_absolute_x, &Interpreter::ASL_ABSX);
+        build(Opcode::ORA_ABSX, "ORA", OP_absolute_x, &Interpreter::ORA_ABSX);
+        build(Opcode::ASL_ABSX, "ASL", OP_absolute_x, &Interpreter::ASL_ABSX);
         undoc(Opcode::ASL_ORA_ABSX_UNDOCUMENTED_1F, "ASL-ORA", 3);
 
-        build(Opcode::JSR, "JSR", OP_absolute, &Interpreter::JSR);
+        build(Opcode::JSR_ABS, "JSR", OP_absolute, &Interpreter::JSR_ABS);
         build(Opcode::AND_INDX, "AND", OP_indirect_x, &Interpreter::AND_INDX);
         undoc(Opcode::HALT_UNDOCUMENTED_22, "HALT", 1);
         undoc(Opcode::ROL_AND_ZPX_UNDOCUMENTED_23, "ROL-AND", 2);
@@ -118,8 +118,8 @@ namespace Emulator
         undoc(Opcode::NOP_UNDOCUMENTED_3A, "NOP", 1);
         undoc(Opcode::ROL_AND_ABSY_UNDOCUMENTED_3B, "ROL-AND", 3);
         undoc(Opcode::NOP_ABS_UNDOCUMENTED_3C, "NOP", 3);
-        build(Opcode::ORA_ABSX_3D, "ORA", OP_absolute_x, &Interpreter::ORA_ABSX);
-        build(Opcode::ASL_ABSX_3E, "ASL", OP_absolute_x, &Interpreter::ASL_ABSX);
+        build(Opcode::AND_ABSX, "AND", OP_absolute_x, &Interpreter::AND_ABSX);
+        build(Opcode::ROL_ABSX, "ROL", OP_absolute_x, &Interpreter::ROL_ABSX);
         undoc(Opcode::ROL_AND_ABSX_UNDOCUMENTED_3F, "ROL-AND", 3);
 
         build(Opcode::RTI, "RTI", OP, &Interpreter::RTI);
@@ -194,7 +194,7 @@ namespace Emulator
         build(Opcode::STA_INDX, "STA", OP_indirect_x, &Interpreter::STA_INDX);
         undoc(Opcode::HALT_UNDOCUMENTED_82, "HALT", 1);
         undoc(Opcode::STA_STX_ZPX_UNDOCUMENTED_83, "STA-STX", 2);
-        build(Opcode::STY_ZP_84, "STY", OP_zero_page, &Interpreter::STY_ZP);
+        build(Opcode::STY_ZP, "STY", OP_zero_page, &Interpreter::STY_ZP);
         build(Opcode::STA_ZP, "STA", OP_zero_page, &Interpreter::STA_ZP);
         build(Opcode::STX_ZP, "STX", OP_zero_page, &Interpreter::STX_ZP);
         undoc(Opcode::STA_STX_ZP_UNDOCUMENTED_87, "STA-STX", 2);
@@ -211,7 +211,7 @@ namespace Emulator
         build(Opcode::STA_INDY, "STA", OP_indirect_y, &Interpreter::STA_INDY);
         undoc(Opcode::HALT_UNDOCUMENTED_92, "HALT", 1);
         undoc(Opcode::STA_STX_ZPY_UNDOCUMENTED_93, "STA-STX", 2);
-        build(Opcode::STY_ZP_94, "STY", OP_zero_page, &Interpreter::STY_ZP);
+        build(Opcode::STY_ZPX, "STY", OP_zero_page_x, &Interpreter::STY_ZPX);
         build(Opcode::STA_ZPX, "STA", OP_zero_page_x, &Interpreter::STA_ZPX);
         build(Opcode::STX_ZPY, "STX", OP_zero_page_y, &Interpreter::STX_ZPY);
         undoc(Opcode::STA_STX_ZPY_UNDOCUMENTED_97, "STA-STX", 2);
@@ -241,7 +241,7 @@ namespace Emulator
         build(Opcode::LDX_ABS, "LDX", OP_absolute, &Interpreter::LDX_ABS);
         undoc(Opcode::LDA_LDX_ABS_UNDOCUMENTED_AF, "LDA-LDX", 3);
 
-        build(Opcode::BCS_REL_B0, "BCS", OP_relative, &Interpreter::BCS);
+        build(Opcode::BCS_REL, "BCS", OP_relative, &Interpreter::BCS);
         build(Opcode::LDA_INDY, "LDA", OP_indirect_y, &Interpreter::LDA_INDY);
         undoc(Opcode::HALT_UNDOCUMENTED_B2, "HALT", 1);
         undoc(Opcode::LDA_LDX_ZPY_UNDOCUMENTED_B3, "LDA-LDX", 2);
@@ -301,9 +301,9 @@ namespace Emulator
         build(Opcode::INC_ZP, "INC", OP_zero_page, &Interpreter::INC_ZP);
         undoc(Opcode::INC_SBC_ZP_UNDOCUMENTED_E7, "INC-SBC", 2);
         build(Opcode::INX, "INX", OP, &Interpreter::INX);
-        build(Opcode::SBC_IMM_E9, "SBC", OP_immediate, &Interpreter::SBC_IMM);
+        build(Opcode::SBC_IMM, "SBC", OP_immediate, &Interpreter::SBC_IMM);
         build(Opcode::NOP, "NOP", OP, &Interpreter::NOP);
-        build(Opcode::SBC_IMM_EB, "SBC", OP_immediate, &Interpreter::SBC_IMM);
+        undoc(Opcode::SBC_IMM_UNDOCUMENTED_EB, "SBC", 2);
         build(Opcode::CPX_ABS, "CPX", OP_absolute, &Interpreter::CPX_ABS);
         build(Opcode::SBC_ABS, "SBC", OP_absolute, &Interpreter::SBC_ABS);
         build(Opcode::INC_ABS, "INC", OP_absolute, &Interpreter::INC_ABS);

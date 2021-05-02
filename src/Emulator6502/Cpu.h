@@ -30,6 +30,18 @@ namespace Emulator
         u8 N : 1;
     };
 
+    enum StatusFlags 
+    {
+        SF_C = 0x01,
+        SF_Z = 0x02,
+        SF_I = 0x04,
+        SF_D = 0x08,
+        SF_B = 0x10,
+        SF_R = 0x20,
+        SF_V = 0x40,
+        SF_N = 0x80
+    };
+
     struct Registers
     {
         u16 PC{0};
@@ -42,10 +54,7 @@ namespace Emulator
     class Cpu final : public Interpreter
     {
     public:
-        Cpu()
-        {
-            reset();
-        }
+        Cpu(){}
 
         void load_into_ram(const u8 *data, const size_t size);
 
@@ -55,19 +64,21 @@ namespace Emulator
         std::string cpu_state() const;
         std::string cpu_stack() const;
 
+        void reset();
     private:
         RAM m_mem;
         Registers m_regs;
+        u8 m_status;
         Flags m_flags;
 
     private:
-        void reset();
         void inc_PC(const int value = 1) { m_regs.PC += value; }
 
-        void set_flags(const u8 new_flags);
-        u8 get_flags();
+        void set_flag(StatusFlags sf, bool value);
+        u8 get_flag(StatusFlags sf) const;
 
         u8 zp_addr(const u16 addr);
+        void branch(const u8 offset);
 
         void push_stack(const u8 val);
         u8 pop_stack();
@@ -153,7 +164,7 @@ namespace Emulator
         virtual void INY(const Instruction &) override;
         virtual void JMP_ABS(const Instruction &) override;
         virtual void JMP_IND(const Instruction &) override;
-        virtual void JSR(const Instruction &) override;
+        virtual void JSR_ABS(const Instruction &) override;
         virtual void LDA_IMM(const Instruction &) override;
         virtual void LDA_ZP(const Instruction &) override;
         virtual void LDA_ZPX(const Instruction &) override;

@@ -11,17 +11,17 @@ namespace Emulator
         std::stringstream ss;
 
         ss << "Flags:   "
-           << "CZIDBRON "
+           << "CZIDBRVN "
            << "\n";
         ss << "         "
-           << (int)m_flags.C
-           << (int)m_flags.Z
-           << (int)m_flags.I
-           << (int)m_flags.D
-           << (int)m_flags.B
-           << (int)m_flags.R
-           << (int)m_flags.V
-           << (int)m_flags.N
+           << (int)get_flag(SF_C)
+           << (int)get_flag(SF_Z)
+           << (int)get_flag(SF_I)
+           << (int)get_flag(SF_D)
+           << (int)get_flag(SF_B)
+           << (int)get_flag(SF_R)
+           << (int)get_flag(SF_V)
+           << (int)get_flag(SF_N)
            << "\n";
 
         ss << std::hex << std::setfill('0') << std::setw(4);
@@ -68,16 +68,14 @@ namespace Emulator
     void Cpu::reset()
     {
         // Set CPU to a known initial state
+        //m_regs.PC = (u16)m_mem.data[0xFFFC] | ((u16)m_mem.data[0xFFFD] << 8);
         m_regs.PC = 0x400;
+        m_regs.SP = 0xFD;
+        m_regs.A = 0;
+        m_regs.X = 0;
+        m_regs.Y = 0;
 
-        m_flags.C = 0;
-        m_flags.Z = 0;
-        m_flags.I = 1;
-        m_flags.D = 0;
-        m_flags.B = 1;
-        m_flags.R = 1;
-        m_flags.V = 0;
-        m_flags.N = 0;
+        m_status = SF_R | SF_I;
     }
 
     void Cpu::load_into_ram(const u8 *data, const size_t size)
@@ -122,31 +120,6 @@ namespace Emulator
         return m_regs.PC;
     }
 
-    void Cpu::set_flags(const u8 new_flags)
-    {
-        m_flags.C = (new_flags >> 0) & (u8)1;
-        m_flags.Z = (new_flags >> 1) & (u8)1;
-        m_flags.I = (new_flags >> 2) & (u8)1;
-        m_flags.D = (new_flags >> 3) & (u8)1;
-        m_flags.V = (new_flags >> 6) & (u8)1;
-        m_flags.N = (new_flags >> 7) & (u8)1;
-    }
-
-    u8 Cpu::get_flags()
-    {
-        u8 flags = 0;
-
-        flags |= (m_flags.C << 0);
-        flags |= (m_flags.Z << 1);
-        flags |= (m_flags.I << 2);
-        flags |= (m_flags.D << 3);
-        flags |= (1 << 4);
-        flags |= (1 << 5);
-        flags |= (m_flags.V << 6);
-        flags |= (m_flags.N << 7);
-        return flags;
-    }
-
     u8 Cpu::zp_addr(const u16 addr)
     {
         if(addr > 0xFF)
@@ -155,6 +128,34 @@ namespace Emulator
         }
 
         return (u8)addr;
+    }
+
+    void Cpu::set_flag(StatusFlags sf, bool value)
+    {
+        if(value)
+        {
+            m_status |= sf;
+        } else 
+        {
+            m_status &= ~sf;
+        }
+    }
+
+    u8 Cpu::get_flag(StatusFlags sf) const
+    {
+        return ((m_status & sf) > 0 ) ? 1 : 0;
+    }
+
+    void Cpu::branch(const u8 offset)
+    {
+        if (offset > 127) // Offset is a signed number
+        {
+            m_regs.PC += ((int)offset - 256);
+        }
+        else 
+        {
+            m_regs.PC += offset;
+        }
     }
 
     void Cpu::push_stack(const u8 val)
@@ -171,104 +172,75 @@ namespace Emulator
 
     void Cpu::set_ZN_reg_A()
     {
-        m_flags.Z = m_regs.A == 0 ? 1 : 0;
-        m_flags.N = (m_regs.A >> 7) & 1;
+        set_flag(SF_Z, m_regs.A == 0);
+        set_flag(SF_N, m_regs.A & 0x80);
     }
 
     void Cpu::set_ZN_reg_X()
     {
-        m_flags.Z = m_regs.X == 0 ? 1 : 0;
-        m_flags.N = (m_regs.X >> 7) & 1;
+        set_flag(SF_Z, m_regs.X == 0);
+        set_flag(SF_N, m_regs.X & 0x80);
     }
 
     void Cpu::set_ZN_reg_Y()
     {
-        m_flags.Z = m_regs.Y == 0 ? 1 : 0;
-        m_flags.N = (m_regs.Y >> 7) & 1;
+        set_flag(SF_Z, m_regs.Y == 0);
+        set_flag(SF_N, m_regs.Y & 0x80);
     }
 
     void Cpu::set_flags_after_compare_reg_A(const u8 value)
     {
-        const u8 result = m_regs.A - value;
+        const u16 result = (u16)m_regs.A - (u16)value;
 
-        if(m_regs.A == value)
-        {
-            m_flags.Z = 1;
-        } else 
-        {
-            m_flags.Z = 0;
-        }
-
-        if(value <= m_regs.A)
-        {
-            m_flags.C = 1;
-        } else 
-        {
-            m_flags.C = 0;
-        }
-
-        m_flags.N = (result >> 7) & 1;
+        set_flag(SF_Z, (result & 0xFF) == 0);
+        set_flag(SF_C, m_regs.A >= value);
+        set_flag(SF_N, result & 0x80);
     }
 
     void Cpu::set_flags_after_compare_reg_X(const u8 value)
     {
-        const int result = m_regs.X - value;
+        const u16 result = (u16)m_regs.X - (u16)value;
 
-        if (result < 0)
-        {
-            m_flags.C = 0;
-            m_flags.Z = 0;
-        }
-        else if (result == 0)
-        {
-            m_flags.C = 1;
-            m_flags.Z = 1;
-        }
-        else
-        {
-            m_flags.Z = 0;
-            m_flags.C = 1;
-        }
-
-        m_flags.N = (result >> 7) & 1;
+        set_flag(SF_Z, (result & 0xFF) == 0);
+        set_flag(SF_C, m_regs.X >= value);
+        set_flag(SF_N, result & 0x80);
     }
 
     void Cpu::set_flags_after_compare_reg_Y(const u8 value)
     {
-        const int result = m_regs.Y - value;
+        const u16 result = (u16)m_regs.Y - (u16)value;
 
-        if (result < 0)
-        {
-            m_flags.C = 0;
-            m_flags.Z = 0;
-        }
-        else if (result == 0)
-        {
-            m_flags.C = 1;
-            m_flags.Z = 1;
-        }
-        else
-        {
-            m_flags.Z = 0;
-            m_flags.C = 1;
-        }
-
-        m_flags.N = (result >> 7) & 1;
-    }
+        set_flag(SF_Z, (result & 0xFF) == 0);
+        set_flag(SF_C, m_regs.Y >= value);
+        set_flag(SF_N, result & 0x80);
+  }
 
     void Cpu::ADC_IMM(const Instruction &insn)
     {
-        const u16 result = m_regs.A + m_flags.C + insn.operand();
+        // Store A+C+M in temporary 'register'
+        const u16 result = m_regs.A + get_flag(SF_C) + insn.operand();
 
-        if (m_flags.D)
+        // Handle decimal mode
+        if (get_flag(SF_D))
         {
             assert(false);
         }
 
-        m_flags.V = ((m_regs.A ^ result) & (insn.operand() ^ result) & 0x80) == 0x80 ? 1 : 0;
-        m_flags.C = (result & 0x100) == 0x100 ? 1 : 0;
-        m_flags.Z = result == 0 ? 1 : 0;
-        m_flags.N = (result >> 7) & 1;
+        // XOR trickery to compute two cases whether the addition overflowed:
+        // (1): both arguments are positive numbers but result is negative
+        // (2): both arguments are negative numbers but result is positive
+        set_flag(SF_V, ((m_regs.A ^ result) & (insn.operand() ^ result) & 0x80) == 0x80);
+        
+        // Carry set if result > 0xFF
+        set_flag(SF_C, (result & 0x100) == 0x100);
+
+        // Zero set if result == 0
+        set_flag(SF_Z, result == 0);
+
+        // Negative set if bit 7 of result is set
+        set_flag(SF_N, result & 0x80);
+
+        // Store lsb of result in A
         m_regs.A = result & 0xFF;
     }
     void Cpu::ADC_ZP(const Instruction &) { assert(false); }
@@ -293,170 +265,111 @@ namespace Emulator
     void Cpu::ASL_ABSX(const Instruction &) { assert(false); }
     void Cpu::BCC(const Instruction &insn)
     {
-        if (!m_flags.C)
+        if (!get_flag(SF_C))
         {
-            if (insn.operand() > 127)
-            {
-                m_regs.PC += ((int)insn.operand() - 256);
-            }
-            else
-            {
-                m_regs.PC += insn.operand();
-            }
+            branch(insn.operand());
         }
     }
     void Cpu::BCS(const Instruction &insn)
     {
-        if (m_flags.C)
+        if (get_flag(SF_C))
         {
-            if (insn.operand() > 127)
-            {
-                m_regs.PC += ((int)insn.operand() - 256);
-            }
-            else
-            {
-                m_regs.PC += insn.operand();
-            }
+            branch(insn.operand());
         }
     }
     void Cpu::BEQ(const Instruction &insn)
     {
-        if (m_flags.Z)
+        if (get_flag(SF_Z))
         {
-            if (insn.operand() > 127)
-            {
-                m_regs.PC += ((int)insn.operand() - 256);
-            }
-            else
-            {
-                m_regs.PC += insn.operand();
-            }
+            branch(insn.operand());
         }
     }
     void Cpu::BMI(const Instruction &insn)
     {
-        if (m_flags.N)
+        if (get_flag(SF_N))
         {
-            if (insn.operand() > 127)
-            {
-                m_regs.PC += ((int)insn.operand() - 256);
-            }
-            else
-            {
-                m_regs.PC += insn.operand();
-            }
+            branch(insn.operand());
         }
     }
     void Cpu::BNE(const Instruction &insn)
     {
-        if (!m_flags.Z)
+        if (!get_flag(SF_Z))
         {
-            if (insn.operand() > 127)
-            {
-                m_regs.PC += ((int)insn.operand() - 256);
-            }
-            else
-            {
-                m_regs.PC += insn.operand();
-            }
+            branch(insn.operand());
         }
     }
     void Cpu::BPL(const Instruction &insn)
     {
-        if (!m_flags.N)
+        if (!get_flag(SF_N))
         {
-            if (insn.operand() > 127)
-            {
-                m_regs.PC += ((int)insn.operand() - 256);
-            }
-            else
-            {
-                m_regs.PC += insn.operand();
-            }
+            branch(insn.operand());
         }
     }
     void Cpu::BVC(const Instruction &insn)
     {
-        if (!m_flags.V)
+        if (!get_flag(SF_V))
         {
-            if (insn.operand() > 127)
-            {
-                m_regs.PC += ((int)insn.operand() - 256);
-            }
-            else
-            {
-                m_regs.PC += insn.operand();
-            }
+            branch(insn.operand());
         }
     }
     void Cpu::BVS(const Instruction &insn)
     {
-        if (m_flags.V)
+        if (get_flag(SF_V))
         {
-            if (insn.operand() > 127)
-            {
-                m_regs.PC += ((int)insn.operand() - 256);
-            }
-            else
-            {
-                m_regs.PC += insn.operand();
-            }
+            branch(insn.operand());
         }
     }
     void Cpu::BIT_ZP(const Instruction &) { assert(false); }
     void Cpu::BIT_ABS(const Instruction &) { assert(false); }
     void Cpu::BRK(const Instruction &)
     {
-        m_flags.B = 1;
-
-        // Push the PC and the status flags on the stack
-        push_stack(m_regs.PC >> 8);
+        // Push the PC (msb, lsb) and the status flags on the stack
+        push_stack((m_regs.PC >> 8) & 0xFF);
         push_stack(m_regs.PC & 0xFF);
-        push_stack(get_flags());
+        
+        push_stack(m_status | SF_B | SF_R);
+        set_flag(SF_I, 1);
 
         // Set PC to interrupt vector
         u16 lsb = m_mem.data[0xFFFE];
         u16 msb = ((u16)m_mem.data[0xFFFF]) << 8;
         m_regs.PC = msb | lsb;
-
-        // Apparently I must be set here??
-        // FIXME: Check if this is correct.
-        m_flags.I = 1;
     }
     void Cpu::CLC(const Instruction &)
     {
-        m_flags.C = 0;
+        set_flag(SF_C, 0);
     }
     void Cpu::CLD(const Instruction &)
     {
-        m_flags.D = 0;
+        set_flag(SF_D, 0);
     }
     void Cpu::CLI(const Instruction &) 
     {  
-        m_flags.I = 0;
+        set_flag(SF_I, 0);
     }
     void Cpu::CLV(const Instruction &) 
     {
-        m_flags.V = 0;
+        set_flag(SF_V, 0);
     }
     void Cpu::CMP_IMM(const Instruction &insn)
     {
         set_flags_after_compare_reg_A(insn.operand());
     }
     void Cpu::CMP_ZP(const Instruction &) { assert(false); }
-    void Cpu::CMP_ZPX(const Instruction &) { assert(false); }
+    void Cpu::CMP_ZPX(const Instruction &) 
+    {  
+        set_flags_after_compare_reg_A(m_mem.data[zp_addr(m_regs.X)]);
+    }
     void Cpu::CMP_ABS(const Instruction &insn)
     {
         set_flags_after_compare_reg_A(m_mem.data[insn.operand()]);
     }
     void Cpu::CMP_ABSX(const Instruction &insn) 
     {
-        std::cout << std::hex << insn.operand() + m_regs.X << (int)m_mem.data[insn.operand() + m_regs.X] << "\n";
         set_flags_after_compare_reg_A(m_mem.data[insn.operand() + m_regs.X]);
     }
     void Cpu::CMP_ABSY(const Instruction &insn) 
     {
-        std::cout << std::hex << insn.operand() + m_regs.X << (int)m_mem.data[insn.operand() + m_regs.Y] << "\n";
         set_flags_after_compare_reg_A(m_mem.data[insn.operand() + m_regs.Y]);
     }
     void Cpu::CMP_INDX(const Instruction &) { assert(false); }
@@ -537,12 +450,12 @@ namespace Emulator
 
         m_regs.PC = target;
     }
-    void Cpu::JSR(const Instruction &insn)
+    void Cpu::JSR_ABS(const Instruction &insn)
     {
-        const u16 return_addr = m_regs.PC - 1;
+        m_regs.PC--;
 
-        push_stack((return_addr >> 8) & 0xFF);
-        push_stack(return_addr & 0xFF);
+        push_stack((m_regs.PC >> 8) & 0xFF);
+        push_stack(m_regs.PC & 0xFF);
 
         m_regs.PC = insn.operand();
     }
@@ -601,9 +514,17 @@ namespace Emulator
         set_ZN_reg_Y();
     }
     void Cpu::LDY_ZP(const Instruction &) { assert(false); }
-    void Cpu::LDY_ZPX(const Instruction &) { assert(false); }
+    void Cpu::LDY_ZPX(const Instruction &insn) 
+    {  
+        m_regs.Y = m_mem.data[zp_addr(insn.operand() + m_regs.X)];
+        set_ZN_reg_Y();
+    }
     void Cpu::LDY_ABS(const Instruction &) { assert(false); }
-    void Cpu::LDY_ABSX(const Instruction &) { assert(false); }
+    void Cpu::LDY_ABSX(const Instruction &insn) 
+    {  
+        m_regs.Y = m_mem.data[insn.operand() + m_regs.X];
+        set_ZN_reg_Y();
+    }
     void Cpu::LSR_A(const Instruction &) { assert(false); }
     void Cpu::LSR_ZP(const Instruction &) { assert(false); }
     void Cpu::LSR_ZPX(const Instruction &) { assert(false); }
@@ -615,7 +536,11 @@ namespace Emulator
         m_regs.A = m_regs.A | (u8)insn.operand();
         set_ZN_reg_A();
     }
-    void Cpu::ORA_ZP(const Instruction &) { assert(false); }
+    void Cpu::ORA_ZP(const Instruction &insn) 
+    { 
+        m_regs.A |= m_mem.data[insn.operand()];
+        set_ZN_reg_A();
+    }
     void Cpu::ORA_ZPX(const Instruction &) { assert(false); }
     void Cpu::ORA_ABS(const Instruction &) { assert(false); }
     void Cpu::ORA_ABSX(const Instruction &) { assert(false); }
@@ -628,29 +553,16 @@ namespace Emulator
     }
     void Cpu::PHP(const Instruction &)
     {
-        m_flags.B = 1;
-
-        auto flags = 0;
-        flags |= (m_flags.C << 0);
-        flags |= (m_flags.Z << 1);
-        flags |= (m_flags.I << 2);
-        flags |= (m_flags.D << 3);
-        flags |= (m_flags.B << 4);
-        flags |= ((u8)1 << 5);
-        flags |= (m_flags.V << 6);
-        flags |= (m_flags.N << 7);
-
-        push_stack(flags);
+        push_stack(m_status | SF_B | SF_R);
     }
     void Cpu::PLA(const Instruction &)
     {
-
         m_regs.A = pop_stack();
         set_ZN_reg_A();
     }
     void Cpu::PLP(const Instruction &)
     {
-        set_flags(pop_stack());
+        m_status = (pop_stack() | SF_R);
     }
     void Cpu::ROL_A(const Instruction &) { assert(false); }
     void Cpu::ROL_ZP(const Instruction &) { assert(false); }
@@ -664,11 +576,10 @@ namespace Emulator
     void Cpu::ROR_ABSX(const Instruction &) { assert(false); }
     void Cpu::RTI(const Instruction &) 
     { 
-        const u8 flags = pop_stack();
+        m_status = (pop_stack() | SF_R);
+        
         const u16 lsb = pop_stack();
         const u16 msb = pop_stack();
-
-        set_flags(flags);
         m_regs.PC = (msb << 8) | lsb;
     }
     void Cpu::RTS(const Instruction &)
@@ -688,15 +599,15 @@ namespace Emulator
     void Cpu::SBC_INDY(const Instruction &) { assert(false); }
     void Cpu::SEC(const Instruction &) 
     {  
-        m_flags.C = 1;
+        set_flag(SF_C, 1);
     }
     void Cpu::SED(const Instruction &) 
     {  
-        m_flags.D = 1;
+        set_flag(SF_D, 1);
     }
     void Cpu::SEI(const Instruction &) 
     {  
-        m_flags.I = 1;
+        set_flag(SF_I, 1);
     }
     void Cpu::STA_ZP(const Instruction &insn)
     {
@@ -726,8 +637,15 @@ namespace Emulator
         m_mem.data[zp_addr(insn.operand() + m_regs.Y)] = m_regs.X;
     }
     void Cpu::STX_ABS(const Instruction &) { assert(false); }
-    void Cpu::STY_ZP(const Instruction &) { assert(false); }
-    void Cpu::STY_ZPX(const Instruction &) { assert(false); }
+    void Cpu::STY_ZP(const Instruction &insn) 
+    {  
+        assert(false);
+        m_mem.data[(u8)insn.operand()] = m_regs.Y;
+    }
+    void Cpu::STY_ZPX(const Instruction &insn) 
+    {
+        m_mem.data[zp_addr(insn.operand() + m_regs.X)] = m_regs.Y;
+    }
     void Cpu::STY_ABS(const Instruction &) { assert(false); }
     void Cpu::TAX(const Instruction &)
     {
