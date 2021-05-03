@@ -26,27 +26,26 @@ int main(int argc, char *const argv[])
         //std::cout << loader;
     }
 
-    while(true)
+    while (true)
     {
         std::cout << "[" << std::hex << cpu.cpu_pc() << "]: ";
         auto insn = cpu.fetch();
-        std::cout <<  insn.stringify();
+        std::cout << insn.stringify();
         (cpu.*insn.handler())(insn);
-        std::cout << cpu.cpu_state();
-    
-        if(cpu.cpu_pc() == 0xfab)
+        //std::cout << cpu.cpu_state();
+
+        if (cpu.cpu_pc() == 0x0)
         {
-            for(int i = 0; i < 20; i++){
+            for (int i = 0; i < 1; i++)
+            {
                 std::cout << "[" << std::hex << cpu.cpu_pc() << "]: ";
                 auto insn1 = cpu.fetch();
-                std::cout <<  insn1.stringify();
+                std::cout << insn1.stringify();
                 (cpu.*insn1.handler())(insn1);
                 std::cout << cpu.cpu_state();
             }
             assert(false);
-
         }
-        
     }
 
     return 0;
